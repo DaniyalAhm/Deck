@@ -59,6 +59,7 @@ def callback():
     )
 
     session["google_id"] = id_info.get("sub") #this might be the thing to push to Mongo, or maybe email instead
+    session["email"] = id_info.get("email")
     session["name"] = id_info.get("name")
     return redirect("/select_preferences")
 
@@ -73,6 +74,7 @@ def index():
     return "<a href='/login'><button>Login</button></a>"
 
 
+#This is probably where you want to add session['email'] or session['google_id'] to the database with the category selections
 @app.route("/select_preferences")
 @login_is_required
 def select_preferences():
