@@ -13,7 +13,7 @@ app.secret_key = "CodeSpecialist.com"
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
-GOOGLE_CLIENT_ID = "456548324618-ctjl1to88i49b8gc5f63gpf65bh0tvmf.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "456548324618-ctjl1to88i49b8gc5f63gpf65bh0tvmf.apps.googleusercontent.com" #You might need to use your own ID from Cloud Console here
 client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
 
 flow = Flow.from_client_secrets_file(
