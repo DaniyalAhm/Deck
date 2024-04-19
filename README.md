@@ -26,7 +26,9 @@ Deck is a dynamic news aggregation application designed to deliver the latest an
    cd Deck
 
 
-\section*{Contributions}
+## Contributions
 We welcome contributions to Deck. Please feel free to fork the repository, make improvements, and submit a pull request. Check out the issues tab for pending improvements and bug fixes.
 
-\end{document}$$
+## Credits
+- Canwbu
+- cliz101
