@@ -4,15 +4,15 @@ from flask_cors import CORS
 import requests
 from flask import Flask, render_template, request, redirect, url_for
 from flask_pymongo import PyMongo
-from werkzeug.security import generate_password_hash
 import os
 import pathlib
 from flask import session
 from flask_bcrypt import Bcrypt
-
+import random
 import requests
 from flask import Flask, session, abort, redirect, request
 from pip._vendor import cachecontrol
+from bs4 import BeautifulSoup
 
 # Initialize the Flask application
 app = Flask(__name__)
@@ -20,7 +20,9 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})  # This will enable CORS for all domains on /api/* routes
-
+import secrets
+secret_key = secrets.token_hex(16)
+app.secret_key = secret_key
 
 
 # Replace 'your_newsapi_api_key' with your actual News API key
@@ -41,21 +43,54 @@ preferences = mongo.db.preferences
 @app.route('/news', methods=['GET'])
 def get_news():
     url = 'https://newsapi.org/v2/top-headlines?country=us&apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
+
+
+
     response = requests.get(url)
 
+
+
+
+    data = response.json()
+    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
+
+    reddit_url = 'https://api.reddit.com/r/news/top?limit=100'
+
+    headers = {
+        'Authorization': Reddit_api,
+        'User-Agent': 'Daniyal'
+
+    }
+
+
+    response2 = requests.get(reddit_url, headers=headers)
+    reddit_data= response2.json()
     if response.status_code == 200:
         data = response.json()
         articles = data['articles']
 
-        filtered_articles = [
+
+
+
+    for post in reddit_data['data']['children']:
+        data['articles'].append({
+            'title': post['data']['title']+" -r/News",
+            'url': post['data']['url'],
+            'urlToImage': get_thumbnail_url(post['data']['url']),
+            "description" : get_first_sentences(post['data']['url'])
+
+            
+        })
+
+    filtered_articles = [
             article for article in articles
             if article['urlToImage'] and article['title'].lower() != 'removed'
         ]
-        data['articles'] = filtered_articles
+    data['articles'] = filtered_articles
 
-        return jsonify(data)
-    else:
-        return
+
+
+    return jsonify(data)
 
 
 @app.route('/search')
@@ -67,12 +102,12 @@ def search():
         'from=2024-04-11&'
         'sortBy=popularity&'
         'apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
-    ).format(query=query)  # Use string formatting to insert the query
+    ).format(query=query)  
 
-    response = requests.get(url)  # Make the request to the News API
-    data = response.json()  # Parse the JSON response
+    response = requests.get(url)  
+    data = response.json()  
 
-    return jsonify(data)  # Return the JSON response to the client
+    return jsonify(data)  
 
 
 @app.route('/Login', methods=['POST'])
@@ -85,6 +120,8 @@ def login():
     else:
         return jsonify({"error": "Invalid credentials"}), 401
 
+#!login with google TO BE DONE
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -93,31 +130,40 @@ def register():
 
     #add to mongo db
     mongo.db.users.insert_one({
+        '_id': generate_unique_id(),
         "email": data['email'],
-        "password": generate_password_hash(data['password']),
+        "password": register_user(data['password']),
         'name' : data['name'],
-        'topics': data['topics']
+        'preferences': data['topics'],
+       
     })
      
-
-
     return jsonify(data), 201
 
-
-
+@app.route('/topics', methods=['GET'])
+def topics():
+    return ['Business', 'Entertainment', 'General', 'Health', 'Science', 'Sports', 'Technology', 'Politics' ]
 
 
 @app.route('/picks-for-you', methods=['GET'])
-def get_picks(username):
+def get_picks():
     if 'user_id' not in session:
         return jsonify({"error": "User not authenticated"}), 500
     
-    user_preferences = preferences.find_one({'user_id': session['user_id']})
+
+
+    user_id = session['user_id']
+    user_preferences = mongo.db.users.find_one({'_id': int(user_id)})['preferences']
+
+    print(user_preferences)
+
     if user_preferences:
         personalized_content = fetch_content_based_on_preferences(user_preferences)
         return jsonify(personalized_content)
     else:
-        return jsonify(fetch_default_content())
+        return jsonify([])
+
+
 
 
 
@@ -132,6 +178,7 @@ def category_click():
         {'$inc': {f'categories.{category}': 1}},
         upsert=True
     )
+
 
     if result.modified_count:
         return jsonify({'message': 'Click recorded'}), 200
@@ -161,16 +208,196 @@ def top_stories():
     else:
         return
  
+
+@app.route('/topics', methods=['GET'])
+def get_topics():
+    topics_data = mongo.db.topics.find()  # Assuming 'topics' is your collection name
+    topics_list = [{'name': topic['name']} for topic in topics_data]  # Adjust based on your data structure
+    return jsonify(topics_list)
+
+
+
 def check_password(stored_password, provided_password): 
     return bcrypt.check_password_hash(stored_password, provided_password)
 
+def register_user( password):
+    password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+    # Now store the email and password_hash in your database
+    return password_hash
+
 def fetch_content_based_on_preferences(user_preferences):
     # Fetch content based on user preferences using API calls
-    return []
+    list = ['Business', 'Entertainment', 'General', 'Health', 'Science', 'Sports', 'Technology' ]
+    reddit_links ={
+        'Business': 'https://api.reddit.com/r/business/top?limit=100',
+        'Entertainment': 'https://api.reddit.com/r/entertainment/top?limit=100',
+        'General': 'https://api.reddit.com/r/news/top?limit=100',
+        'Health': 'https://api.reddit.com/r/health/top?limit=100',
+        'Science': 'https://api.reddit.com/r/science/top?limit=100',
+        'Sports': 'https://api.reddit.com/r/sports/top?limit=100',
+        'Technology': 'https://api.reddit.com/r/technology/top?limit=100'
+    }
+    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
 
-def fetch_default_content():
-    # Fetch default content using API calls
-    return []
+    content = []
+    headers = {
+        'Authorization': Reddit_api,
+        'User-Agent': 'Daniyal'
+
+
+    }
+
+
+    
+    for topic in list:
+        if topic in user_preferences:
+            url = reddit_links[topic]
+            
+            response = requests.get(url, headers=headers)
+            reddit_data = response.json()
+            for post in reddit_data['data']['children']:
+                content.append({
+                    'title': post['data']['title']+" (Reddit)",
+                    'url': post['data']['url'],
+                    'urlToImage': get_thumbnail_url(post['data']['url'])
+                })
+
+    #now using news api to search
+    api = 'apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
+    q = 'q='
+    for topic in list:
+        if topic in user_preferences:
+            q += topic + ' OR '
+    q = q[:-4]
+    url = 'https://newsapi.org/v2/everything?'+q+'&'+api
+    response = requests.get(url)
+    data = response.json()
+    articles = data['articles']
+    for article in articles:
+        content.append({
+            'title': article['title'],
+            'url': article['url'],
+            'urlToImage': article['urlToImage']
+        })
+    
+    if(len(content) == 0):
+        print("No content found")
+
+
+    return content
+
+
+#!Simple webscrapping to get the thumbnail of the article
+def get_thumbnail_url(page_url):
+    response = requests.get(page_url)
+    if response.status_code == 200:
+        html_content = response.text
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        og_image = soup.find('meta', property='og:image')
+        if og_image and og_image.get('content'):
+            return og_image['content']
+    
+
+    return None
+
+def generate_unique_id():
+    #if the user id is not already in the database
+    user_id = random.randint(100000, 999999)
+    if mongo.db.users.find_one({'user id': user_id}):
+        return generate_unique_id()
+    return user_id
+
+import requests
+from bs4 import BeautifulSoup
+
+def get_first_sentences(page_url, sentence_count=50):
+    response = requests.get(page_url)
+    if response.status_code == 200:
+        html_content = response.text
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # Attempt to find the main article content
+        # Common tags include <article>, <div>, or directly <p> tags within specific containers
+        article_body = soup.find('article')
+        if not article_body:
+            article_body = soup.find('div', {'class': 'post-body'})  # You might need to adjust this class name based on common patterns
+
+
+
+
+        # If an article body container is found, extract text from <p> tags
+        if article_body:
+            paragraphs = article_body.find_all('p')
+            full_text = ' '.join(p.get_text() for p in paragraphs)
+            # Split the text into sentences
+            sentences = full_text.split(' ')
+            # Return the first few sentences
+            for i in range(0, len(sentences)):
+                if i %5 == 0:
+                    sentences[i] = sentences[i] + '\n'
+
+            string =  " ".join(sentences[:sentence_count]) + '.'
+
+         
+            return string
+
+    # Return None if no content is found or there's an HTTP error
+    return "No Description, Click Read more for more information"
+
+
+def getRedditnews():
+    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
+
+    reddit_url = 'https://api.reddit.com/r/news/top?limit=100'
+
+
+    reddit_links ={
+        'Business': 'https://api.reddit.com/r/business/top?limit=100',
+        'Entertainment': 'https://api.reddit.com/r/entertainment/top?limit=100',
+        'General': 'https://api.reddit.com/r/news/top?limit=100',
+        'Health': 'https://api.reddit.com/r/health/top?limit=100',
+        'Science': 'https://api.reddit.com/r/science/top?limit=100',
+        'Sports': 'https://api.reddit.com/r/sports/top?limit=100',
+        'Technology': 'https://api.reddit.com/r/technology/top?limit=100',
+        'Politics': 'https://api.reddit.com/r/politics/top?limit=100',
+         'News': reddit_url
+    }
+    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
+
+    content = []
+    headers = {
+        'Authorization': Reddit_api,
+        'User-Agent': 'Daniyal'
+
+
+    }
+
+    for topic in list:
+            url = reddit_links[topic]
+            response = requests.get(url, headers=headers)
+            reddit_data = response.json()
+            for post in reddit_data['data']['children']:
+                content.append({
+                    'title': post['data']['title']+" (Reddit)",
+                    'url': post['data']['url'],
+                    'urlToImage': get_thumbnail_url(post['data']['url'])
+                })
+
+    return content
+
+
+def combine_dataset(data1, data2):
+    for post in data2:
+        data1['articles'].append({
+            'title': post['data']['title']+" (Reddit)",
+            'url': post['data']['url'],
+            'urlToImage': get_thumbnail_url(post['data']['url'])
+        })
+
+    return data1
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
