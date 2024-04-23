@@ -1,60 +1,40 @@
-/* Global styles */
-body {
-  background-color: #15021f; /* Dark background for the whole page */
-  color: #fff; /* White text for better readability */
-  font-family: Arial, sans-serif; /* Ensuring a consistent font is used */
-  
-}
 
-.Searchbar{
+/* Adjust the search bar positioning */
+.Searchbar {
   display: flex;
   position: relative;
-  margin-left: 50%;
-  top:50%;
+  top: 30%;
 }
 
 .search-form {
-  margin-top: 20px;
   border-radius: 4px;
   color: #433e46;
-  border-radius: 10px;
-
-  
-  
-  
-  
 }
-.Loading{
+
+.Loading {
   position: relative;
   top: 50%;
   left: 45%;
-  bottom: 50%;
   color: rgb(59, 53, 53);
-  size:100px;
-
-
-
-
+  font-size: 100px;
 }
+
 .search-button {
   background: #2b0146;
   color: white;
   border: none;
   border-radius: 2px;
   cursor: pointer;
-  
 }
 
-
-/* Article container styles */
+/* Article Styles */
 .articles-container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-around; /* Even spacing */
+  justify-content: space-around;
   padding: 20px;
 }
 
-/* Article box layout */
 .article {
   max-width: 300px;
   padding: 15px;
@@ -66,12 +46,11 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: box-shadow 0.3s ease-in-out; /* Transition effect for the box-shadow */
-
-
+  transition: box-shadow 0.3s ease-in-out;
 }
+
 .article:hover {
-  box-shadow: 0px 0px 50px rgba(171, 57, 228, 0.87); 
+  box-shadow: 0px 0px 50px rgba(171, 57, 228, 0.87);
 }
 
 .article img {
@@ -81,135 +60,71 @@ body {
   margin-bottom: 10px;
 }
 
-.articleTitle {
-  font-size: 1.5rem;
+.articleTitle, .article h2, .article p {
   margin-bottom: 5px;
 }
 
-.article h2 {
-  font-size: 1.2rem;
-  margin-bottom: 5px;
-}
-
-.article p {
-  font-size: 0.9rem;
-}
-
-.register_tab{
-  justify-content: space-between;
+/* Link and Navigation Styles */
+.Navbar {
+  display: flex;
+  justify-content: space-around; /* Space out the links evenly */
   align-items: center;
+  padding: 0;
+  margin: 0;
+}
+
+.topic-business, .topic-technology, .topic-entertainment, .topic-health, .topic-science, .topic-sports, .topic-politics, .picks-for-you_tab {
   padding: 20px;
-  background: #2b0146; 
+  background: #2b0146;
   border-radius: 4px;
-  color:white;
-  margin-right: 1%;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  flex-grow: 1;
+  margin: 5px; /* Adding space between each link */
   position: relative;
-  top:10%;
-
-  
+  top: 40%;
 }
 
-
-.register_tab{
-  align-items: center;
-  padding: 20px;
-  background: #2b0146; 
-  border-radius: 4px;
-  color:white;
-  text-decoration: none; 
-  top:50%;
-  position: relative;
-  margin-top: 100px;
-  bottom: 175px ;
-  left: 90%;
-}
-
-.picks-for-you_tab{
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background: #2b0146; 
-  border-radius: 4px;
-  color:white;
-  text-decoration: none;  
-  position: relative;
-  left:36.3%;
-  top: 55px;
-
-
-
-}
-
-
-
-
-
-/* Registration form styling */
- .registration {
-  position: relative;
-  align-items: center;
-  justify-content: center;
-  background: #2b0146; /* Matching search bar background */
-  border-radius: 4px;
-  color: #fff;
-  top:30px;
-
-}  
 
 
 .Read_more {
   font-size: 1rem;
-  background: #15021f; 
-  color: white; 
-  text-decoration: none; 
-  padding: 15px 20px; 
-  border-radius: 4px; 
-  border: 2px solid #15021f; 
+  background: #15021f;
+  color: white;
+  text-decoration: none;
+  padding: 15px 20px;
+  border-radius: 4px;
+  border: 2px solid #15021f;
   display: inline-block;
 }
 
-
-.bar{
-  color: #2b0146;
-  width: 1rem;
-  background-color: #2b0146;
-  border-radius: 4px;
-  position: relative;
-  right:55%;
-  height: 500px;
-
-}
-
- .header{
-  justify-content: space-between;
+/* Header and Global Styles */
+.header {
+  display: flex;
   align-items: center;
-  border-radius: 4px;
-  color:white;
-  text-decoration: none;  
-  position: relative;
-  top:10%;
+  justify-content: space-between;
+  position: relative; /* Ensures absolute positioning context for children */
+  padding: 20px; /* Adds padding inside the header */
+  color: white;
   font-size: 2rem;
 }
 
-.topic-business, .topic-technology, .topic-entertainment, .topic-health, .topic-science, .topic-sports, .topic-politics {
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background: #2b0146; 
-  border-radius: 4px;
-  color: white;
-  text-decoration: none;  
-  display: block; /* Makes the link take the full width of its container */
-  margin-bottom: 10px; /* Adds space between links */
-  margin-right: 10px;
+body {
+  background-color: #15021f;
+  color: #fff;
+  font-family: Arial, sans-serif;
 }
 
-/* Ensures that the links are centered within their navigation container */
-.Topics {
-  display: flex;
-  align-items: center; /* Centers the links */
-  padding: 0; /* Removes default padding */
-  list-style-type: none; /* Removes default list styling */
-  position: relative;
-  top: 10%;
+/* Register Tab Styles */
+.register_tab {
+  position: absolute; /* Positions absolutely within header */
+  top: 0; /* Align top edge of register_tab with top of the header */
+  left: 90%; /* Align left edge of register_tab with left of the header */
+  padding: 10px 20px;
+  background: #2b0146;
+  border-radius: 4px;
+  color: white;
+  text-decoration: none;
 }
+

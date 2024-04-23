@@ -140,9 +140,36 @@ def register():
      
     return jsonify(data), 201
 
-@app.route('/topics', methods=['GET'])
-def topics():
-    return ['Business', 'Entertainment', 'General', 'Health', 'Science', 'Sports', 'Technology', 'Politics' ]
+@app.route('/Business', methods=['GET'])
+def Bussiness():
+    return jsonify(get_news_by_topics('Business'))
+
+@app.route('/Entertainment', methods=['GET'])
+def Entertainment():
+    return jsonify(get_news_by_topics('Entertainment'))
+
+@app.route('/Politics', methods=['GET'])
+def Politics():
+    return jsonify(get_news_by_topics('Politics'))
+
+@app.route('/Health', methods=['GET'])
+def Health():
+    return jsonify(get_news_by_topics('Health'))
+
+@app.route('/Science', methods=['GET'])
+def Science():
+    return jsonify(get_news_by_topics('Science'))
+
+@app.route('/Sports', methods=['GET'])
+def Sports():
+    return jsonify(get_news_by_topics('Sports'))
+
+@app.route('/Technology', methods=['GET'])
+def Technology():
+    return jsonify(get_news_by_topics('Technology'))
+
+
+
 
 
 @app.route('/picks-for-you', methods=['GET'])
@@ -166,6 +193,82 @@ def get_picks():
 
 
 
+def get_news_by_topics(topics):
+
+    reddit_links ={
+        'Business': 'https://api.reddit.com/r/business/top?limit=100',
+        'Entertainment': 'https://api.reddit.com/r/entertainment/top?limit=100',
+        'General': 'https://api.reddit.com/r/news/top?limit=100',
+        'Health': 'https://api.reddit.com/r/health/top?limit=100',
+        'Science': 'https://api.reddit.com/r/science/top?limit=100',
+        'Sports': 'https://api.reddit.com/r/sports/top?limit=100',
+        'Technology': 'https://api.reddit.com/r/technology/top?limit=100',
+        'Politics': 'https://api.reddit.com/r/politics/top?limit=100',
+    }
+    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
+
+    content = []
+    headers = {
+        'Authorization': Reddit_api,
+        'User-Agent': 'Daniyal'
+    }
+        
+
+
+    #url for query
+
+
+    url= 'https://newsapi.org/v2/everything?q='+topics+'&apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
+
+
+
+    response = requests.get(url)
+
+
+
+
+    data = response.json()
+    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
+
+    reddit_url = reddit_links[topics]
+
+    headers = {
+        'Authorization': Reddit_api,
+        'User-Agent': 'Daniyal'
+
+    }
+
+
+    response2 = requests.get(reddit_url, headers=headers)
+    reddit_data= response2.json()
+    if response.status_code == 200:
+        data = response.json()
+        articles = data['articles']
+
+
+
+
+    for post in reddit_data['data']['children']:
+        data['articles'].append({
+            'title': post['data']['title']+" -r/News",
+            'url': post['data']['url'],
+            'urlToImage': get_thumbnail_url(post['data']['url']),
+            "description" : get_first_sentences(post['data']['url'])
+
+            
+        })
+
+    filtered_articles = [
+            article for article in articles
+            if article['urlToImage'] and article['title'].lower() != 'removed'
+        ]
+    data['articles'] = filtered_articles
+
+    return data
+
+
+
+    
 
 @app.route('/category_click', methods=['POST'])
 def category_click():
@@ -200,7 +303,7 @@ def top_stories():
 
         filtered_articles = [
             article for article in articles
-            if article['urlToImage'] and article['title'].lower() != 'removed'
+            if article['urlToImage'] and article['title'].lower() != 'removed' or None
         ]
         data['articles'] = filtered_articles
 
@@ -208,13 +311,6 @@ def top_stories():
     else:
         return
  
-
-@app.route('/topics', methods=['GET'])
-def get_topics():
-    topics_data = mongo.db.topics.find()  # Assuming 'topics' is your collection name
-    topics_list = [{'name': topic['name']} for topic in topics_data]  # Adjust based on your data structure
-    return jsonify(topics_list)
-
 
 
 def check_password(stored_password, provided_password): 
@@ -259,8 +355,14 @@ def fetch_content_based_on_preferences(user_preferences):
                 content.append({
                     'title': post['data']['title']+" (Reddit)",
                     'url': post['data']['url'],
-                    'urlToImage': get_thumbnail_url(post['data']['url'])
+                    'urlToImage': get_thumbnail_url(post['data']['url']),
+                    "description" : get_first_sentences(post['data']['url'])
+
                 })
+
+
+
+        return jsonify(content)
 
     #now using news api to search
     api = 'apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
@@ -299,7 +401,7 @@ def get_thumbnail_url(page_url):
             return og_image['content']
     
 
-    return None
+    return 'removed'
 
 def generate_unique_id():
     #if the user id is not already in the database

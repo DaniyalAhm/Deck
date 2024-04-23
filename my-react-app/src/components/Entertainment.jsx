@@ -2,29 +2,29 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import loadingGif from './loading.gif';
-import sadface from './sad face.jpg';
 
 
 
-const NewsComponent = () => {
+
+const Entertainment = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Make a GET request to the Flask backend '/news' endpoint
-    axios.get('/news')
+    axios.get('/Entertainment')
       .then(response => {
-        // Handle success
-        setNews(response.data.articles);
+        console.log("News data:", response.data);  // Log the data received
+        setNews(response.data.articles);  // Make sure this matches the structure of your data
         setLoading(false);
       })
       .catch(error => {
-        // Handle error
+        console.error("Fetching error:", error);
         setError(error);
         setLoading(false);
       });
   }, []);
+
 
   if (loading) {
     //TODO PUT LOADING GIF HERE
@@ -36,8 +36,8 @@ const NewsComponent = () => {
   if (error) {
 
  
-    //todo ADD SAD FACE IMAGE HERE
-    return <div>Error: {error.message}   </div>;
+
+    return <div>Error: {error.message}</div>;
   }
 
   return (
@@ -60,4 +60,4 @@ const NewsComponent = () => {
   );
 };
 
-export default NewsComponent;
+export default Entertainment;
