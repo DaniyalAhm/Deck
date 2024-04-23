@@ -163,9 +163,34 @@ def get_picks():
     else:
         return jsonify([])
 
+#'Business', 'Technology', 'Entertainment', 'Health', 'Science', 'Sports', 'Politics'
+@app.route('/topics/business')
+def politics():
+    return jsonify(get_news_by_topics(['Business']))
 
+@app.route('/topics/technology')
+def politics():
+    return jsonify(get_news_by_topics(['Technology']))
 
+@app.route('/topics/entertainment')
+def politics():
+    return jsonify(get_news_by_topics(['Entertainment']))
 
+@app.route('/topics/health')
+def politics():
+    return jsonify(get_news_by_topics(['Health']))
+
+@app.route('/topics/science')
+def politics():
+    return jsonify(get_news_by_topics(['Science']))
+
+@app.route('/topics/sports')
+def politics():
+    return jsonify(get_news_by_topics(['Sports']))
+
+@app.route('/topics/politics')
+def politics():
+    return jsonify(get_news_by_topics(['Politics']))
 
 @app.route('/category_click', methods=['POST'])
 def category_click():
