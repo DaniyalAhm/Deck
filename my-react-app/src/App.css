@@ -1,31 +1,15 @@
-<<<<<<< HEAD
 
 /* Adjust the search bar positioning */
 .Searchbar {
   display: flex;
   position: relative;
   top: 30%;
-=======
-/* Global styles */
-body {
-  background-color: #15021f; /* Dark background for the whole page */
-  color: #fff; /* White text for better readability */
-  font-family: Arial, sans-serif; /* Ensuring a consistent font is used */
-}
-
-.Searchbar {
-  display: flex;
-  position: relative;
-  margin-left: 50%; /* Consider changing to `transform: translateX(-50%);` for centering */
-  top: 50%; /* Consider changing to `transform: translateY(-50%);` */
->>>>>>> de0a9fb38a7affce6fb4bd89d9b1ddc315fa123b
 }
 
 .search-form {
   border-radius: 4px;
   color: #433e46;
 }
-<<<<<<< HEAD
 
 .Loading {
   position: relative;
@@ -33,13 +17,6 @@ body {
   left: 45%;
   color: rgb(59, 53, 53);
   font-size: 100px;
-=======
-.Loading {
-  position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
->>>>>>> de0a9fb38a7affce6fb4bd89d9b1ddc315fa123b
 }
 
 .search-button {
@@ -73,21 +50,6 @@ body {
   transition: box-shadow 0.3s ease-in-out;
 }
 
-<<<<<<< HEAD
-=======
-@media (min-width: 600px) {
-  .article {
-    width: 48%; /* Adjust based on container size, two columns */
-  }
-}
-
-@media (min-width: 900px) {
-  .article {
-    width: 32%; /* Three columns layout */
-  }
-}
-
->>>>>>> de0a9fb38a7affce6fb4bd89d9b1ddc315fa123b
 .article:hover {
   box-shadow: 0px 0px 50px rgba(171, 57, 228, 0.87);
 }
