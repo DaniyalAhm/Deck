@@ -208,9 +208,20 @@ def get_picks():
     else:
         return jsonify([])
 
+#'Business', 'Technology', 'Entertainment', 'Health', 'Science', 'Sports', 'Politics'
+@app.route('/topics/business')
+def politics():
+    return jsonify(get_news_by_topics(['Business']))
 
+@app.route('/topics/technology')
+def politics():
+    return jsonify(get_news_by_topics(['Technology']))
 
+@app.route('/topics/entertainment')
+def politics():
+    return jsonify(get_news_by_topics(['Entertainment']))
 
+<<<<<<< HEAD:backend/Backend_main.py
 def get_news_by_topics(topics):
 
     reddit_links ={
@@ -280,6 +291,23 @@ def get_news_by_topics(topics):
 
 
     
+=======
+@app.route('/topics/health')
+def politics():
+    return jsonify(get_news_by_topics(['Health']))
+
+@app.route('/topics/science')
+def politics():
+    return jsonify(get_news_by_topics(['Science']))
+
+@app.route('/topics/sports')
+def politics():
+    return jsonify(get_news_by_topics(['Sports']))
+
+@app.route('/topics/politics')
+def politics():
+    return jsonify(get_news_by_topics(['Politics']))
+>>>>>>> de0a9fb38a7affce6fb4bd89d9b1ddc315fa123b:backend/Api.py
 
 @app.route('/category_click', methods=['POST'])
 def category_click():
