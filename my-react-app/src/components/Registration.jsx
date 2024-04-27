@@ -1,104 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Registration = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [topics, setTopics] = useState(['stuff']); // To store the list of topics
-  const [selectedTopics, setSelectedTopics] = useState([]); // To store the user's selected topics
+  const [isLoading, setIsLoading] = useState(false); // Loading state
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    axios.get('/topics') // Fetch the topics from the backend
-      .then(response => {
-        setTopics(response.data); // Assuming the backend sends an array of topics
-      })
-      .catch(error => {
-        console.log('Error fetching topics:', error);
-      });
-  }, []);
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const userData = {
-      name, 
-      email, 
-      password, 
-      topics: selectedTopics
-    };
-
-    axios.post('/register', userData)
-      .then(response => {
-        setMessage(response.data.message);
-        redirectTo('/'); // Redirect on successful registration
-      })
-      .catch(error => {
-        setMessage(error.response.data.message);
+    setIsLoading(true); // Set loading to true to start the loading state
+    try {
+      // Perform the registration
+      const response = await axios.post('/register', {
+        name,
+        email,
+        password
       });
-
-      redirectTo('/'); // Redirect on successful registration
+      setMessage(response.data.message || 'Registration successful!');
+      navigate('/topics'); // Navigate after successful registration
+    } catch (error) {
+      // Handle any errors
+      setMessage(error.response?.data?.error || 'Registration failed!');
+    } finally {
+      setIsLoading(false); // Set loading to false regardless of the outcome
+    }
   };
 
-  const handleTopicChange = (topic) => {
-    setSelectedTopics(prevSelectedTopics =>
-      prevSelectedTopics.includes(topic)
-        ? prevSelectedTopics.filter(t => t !== topic) // Remove topic if it's already selected
-        : [...prevSelectedTopics, topic] // Add topic if it's not already selected
-    );
-  };
 
-  const redirectTo = (path) => {
-    window.location.assign(path);
-  }
+  const handleOAuthClick = () => {
+    window.location.href = 'http://127.0.0.1:5000/oauth_register'; // Direct URL to initiate OAuth
+  };
+  
 
   return (
     <div className="registration">
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
-        <label>
+        <label className='Name-Register'>
           Name:
           <input
             type="text"
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(e) => setName(e.target.value)}
           />
         </label>
-        <label>
+        <label className='Email-Register'>
           Email:
           <input
             type="email"
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />  
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </label>
-        <label>
+        <label className='Password-Register'>
           Password:
           <input
             type="password"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </label>
-
-        <fieldset>
-          <legend>What topics are you interested in?</legend>
-          {topics.map(topic => (
-            <label key={topic}>
-              <input
-              
-                type="checkbox"
-                value={topic}
-                checked={selectedTopics.includes(topic)}
-                onChange={() => handleTopicChange(topic)}
-              />
-              {topic}
-            </label>
-          ))}
-        </fieldset>
-        
-        <button type="submit">Register</button>
+        <button type="submit" disabled={isLoading}>Register</button>
       </form>
+
+      <h1>Or sign up with Google</h1>
+      <form >
+      <button onClick={handleOAuthClick} disabled={isLoading}>Sign in with Google</button>
+      </form>
+
       {message && <p>{message}</p>}
     </div>
   );

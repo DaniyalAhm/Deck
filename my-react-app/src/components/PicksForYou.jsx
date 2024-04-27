@@ -1,6 +1,8 @@
 // components/PicksForYou.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import loadingGif from './loading.gif';
+
 
 const PicksForYou = () => {
   const [news, setNews] = useState([]);
@@ -21,7 +23,7 @@ const PicksForYou = () => {
 
 
   if (loading) {
-    return <div>Loading news...</div>;
+    return <div className='Loading'><img src={loadingGif} alt="Loading..." /></div>;
   }
 
   if (error === 500) {

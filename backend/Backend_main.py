@@ -13,13 +13,25 @@ import requests
 from flask import Flask, session, abort, redirect, request
 from pip._vendor import cachecontrol
 from bs4 import BeautifulSoup
+from bson.objectid import ObjectId
+import os
+import pathlib
+
+import requests
+from flask import Flask, session, abort, redirect, request
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
+from pip._vendor import cachecontrol
+import google.auth.transport.requests
+
+
 
 # Initialize the Flask application
 app = Flask(__name__)
 # Enable CORS
 bcrypt = Bcrypt(app)
 
-CORS(app, resources={r"/api/*": {"origins": "*"}})  # This will enable CORS for all domains on /api/* routes
+CORS(app, resources={r"/*": {"origins": "*"}})  # This will enable CORS for all domains on /api/* routes
 import secrets
 secret_key = secrets.token_hex(16)
 app.secret_key = secret_key
@@ -39,6 +51,7 @@ mongo = PyMongo(app)    # Initialize PyMongo with the Flask application
 users = mongo.db.users
 preferences = mongo.db.preferences
 
+loggedin= False
 
 @app.route('/news', methods=['GET'])
 def get_news():
@@ -54,7 +67,7 @@ def get_news():
     data = response.json()
     Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
 
-    reddit_url = 'https://api.reddit.com/r/news/top?limit=100'
+    reddit_url = 'https://api.reddit.com/r/news/top?limit=25'
 
     headers = {
         'Authorization': Reddit_api,
@@ -127,18 +140,24 @@ def login():
 def register():
     data = request.get_json()
     print(data)
-
+    id = generate_unique_id()
     #add to mongo db
     mongo.db.users.insert_one({
-        '_id': generate_unique_id(),
+        '_id': id,
         "email": data['email'],
         "password": register_user(data['password']),
         'name' : data['name'],
-        'preferences': data['topics'],
-       
+        'selectedTopics': "NONE",
     })
+
+    session.clear()
+    session['user_id'] = id
+    return jsonify({"message": "User registered successfully"}), 200
+
+
      
-    return jsonify(data), 201
+
+
 
 @app.route('/Business', methods=['GET'])
 def Bussiness():
@@ -180,9 +199,8 @@ def get_picks():
 
 
     user_id = session['user_id']
-    user_preferences = mongo.db.users.find_one({'_id': int(user_id)})['preferences']
+    user_preferences = mongo.db.users.find_one({'_id': (user_id)})['selectedTopics']
 
-    print(user_preferences)
 
     if user_preferences:
         personalized_content = fetch_content_based_on_preferences(user_preferences)
@@ -196,28 +214,21 @@ def get_picks():
 def get_news_by_topics(topics):
 
     reddit_links ={
-        'Business': 'https://api.reddit.com/r/business/top?limit=100',
-        'Entertainment': 'https://api.reddit.com/r/entertainment/top?limit=100',
-        'General': 'https://api.reddit.com/r/news/top?limit=100',
-        'Health': 'https://api.reddit.com/r/health/top?limit=100',
-        'Science': 'https://api.reddit.com/r/science/top?limit=100',
-        'Sports': 'https://api.reddit.com/r/sports/top?limit=100',
-        'Technology': 'https://api.reddit.com/r/technology/top?limit=100',
-        'Politics': 'https://api.reddit.com/r/politics/top?limit=100',
+        'Business': 'https://api.reddit.com/r/business/top?limit=255',
+        'Entertainment': 'https://api.reddit.com/r/entertainment/top?limit=25',
+        'General': 'https://api.reddit.com/r/news/top?limit=25',
+        'Health': 'https://api.reddit.com/r/health/top?limit=25',
+        'Science': 'https://api.reddit.com/r/science/top?limit=25',
+        'Sports': 'https://api.reddit.com/r/sports/top?limit=25',
+        'Technology': 'https://api.reddit.com/r/technology/top?limit=25',
+        'Politics': 'https://api.reddit.com/r/politics/top?limit=25',
     }
     Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
 
-    content = []
     headers = {
         'Authorization': Reddit_api,
         'User-Agent': 'Daniyal'
     }
-        
-
-
-    #url for query
-
-
     url= 'https://newsapi.org/v2/everything?q='+topics+'&apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
 
 
@@ -292,27 +303,6 @@ def category_click():
 
 
 
-@app.route('/top-stories', methods=['GET'])
-def top_stories():
-    url = 'https://newsapi.org/v2/top-headlines?country=us&apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
-    response = requests.get(url)
-
-    if response.status_code == 200:
-        data = response.json()
-        articles = data['articles']
-
-        filtered_articles = [
-            article for article in articles
-            if article['urlToImage'] and article['title'].lower() != 'removed' or None
-        ]
-        data['articles'] = filtered_articles
-
-        return jsonify(data)
-    else:
-        return
- 
-
-
 def check_password(stored_password, provided_password): 
     return bcrypt.check_password_hash(stored_password, provided_password)
 
@@ -323,70 +313,58 @@ def register_user( password):
 
 def fetch_content_based_on_preferences(user_preferences):
     # Fetch content based on user preferences using API calls
-    list = ['Business', 'Entertainment', 'General', 'Health', 'Science', 'Sports', 'Technology' ]
-    reddit_links ={
-        'Business': 'https://api.reddit.com/r/business/top?limit=100',
-        'Entertainment': 'https://api.reddit.com/r/entertainment/top?limit=100',
-        'General': 'https://api.reddit.com/r/news/top?limit=100',
-        'Health': 'https://api.reddit.com/r/health/top?limit=100',
-        'Science': 'https://api.reddit.com/r/science/top?limit=100',
-        'Sports': 'https://api.reddit.com/r/sports/top?limit=100',
-        'Technology': 'https://api.reddit.com/r/technology/top?limit=100'
-    }
-    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
-
     content = []
-    headers = {
-        'Authorization': Reddit_api,
-        'User-Agent': 'Daniyal'
+    for topic in user_preferences:
+        content.append(get_news_by_topics(topic))
 
-
-    }
+    data = content[0]['articles']
 
 
     
-    for topic in list:
-        if topic in user_preferences:
-            url = reddit_links[topic]
-            
-            response = requests.get(url, headers=headers)
-            reddit_data = response.json()
-            for post in reddit_data['data']['children']:
-                content.append({
-                    'title': post['data']['title']+" (Reddit)",
-                    'url': post['data']['url'],
-                    'urlToImage': get_thumbnail_url(post['data']['url']),
-                    "description" : get_first_sentences(post['data']['url'])
+    for i in range(1, len(content)):
 
-                })
+        if 'articles' in content:
+            data.extend(content['articles'])
+
+    return (data)
 
 
-
-        return jsonify(content)
-
-    #now using news api to search
-    api = 'apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
-    q = 'q='
-    for topic in list:
-        if topic in user_preferences:
-            q += topic + ' OR '
-    q = q[:-4]
-    url = 'https://newsapi.org/v2/everything?'+q+'&'+api
-    response = requests.get(url)
-    data = response.json()
-    articles = data['articles']
-    for article in articles:
-        content.append({
-            'title': article['title'],
-            'url': article['url'],
-            'urlToImage': article['urlToImage']
-        })
-    
-    if(len(content) == 0):
-        print("No content found")
+@app.route('/is_active_session' , methods=['GET'])
+def is_active_session():
+    if 'user_id' in session:
+        return jsonify({'active': True}), 200
+    else:
+        return jsonify({'active': False}), 200
 
 
-    return content
+
+
+@app.route('/topics', methods=['GET'])
+def get_topics():
+    return jsonify(['Business', 'Entertainment', 'General', 'Health', 'Science', 'Sports', 'Technology'])
+
+
+
+
+@app.route('/update_user_topics', methods=['POST'])
+def post():
+    data = request.get_json()
+    if('user_id' not in session):
+        return jsonify({"error": "User not authenticated"}), 500
+
+
+    user = mongo.db.users.find_one({'_id': session['user_id']})
+    filter = {'_id': session['user_id']}
+    new_values = {'$set': {'selectedTopics': data['topics']}}
+
+    if user:
+        mongo.db.users.update_one(filter=filter, update=new_values)
+        return jsonify({"message": "Preferences updated successfully"}), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+
+
 
 
 #!Simple webscrapping to get the thumbnail of the article
@@ -403,15 +381,17 @@ def get_thumbnail_url(page_url):
 
     return 'removed'
 
+
+
+
 def generate_unique_id():
     #if the user id is not already in the database
     user_id = random.randint(100000, 999999)
     if mongo.db.users.find_one({'user id': user_id}):
         return generate_unique_id()
-    return user_id
+    return str(user_id)
 
-import requests
-from bs4 import BeautifulSoup
+
 
 def get_first_sentences(page_url, sentence_count=50):
     response = requests.get(page_url)
@@ -448,21 +428,53 @@ def get_first_sentences(page_url, sentence_count=50):
     return "No Description, Click Read more for more information"
 
 
+@app.route('/getuser_info', methods=['GET'])
+def getuser_info():
+    if 'user_id' not in session:
+        return jsonify({"error": "User not authenticated"}), 500
+
+    print(session['user_id'])
+    user = mongo.db.users.find_one({'_id': (session['user_id'])})
+    if user:
+        return jsonify(user), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+
+
+@app.route('/update_preferences', methods=['POST'])
+
+
+
+
+def update_preferences():
+    data = request.get_json()
+    user = mongo.db.users.find_one({'id': session['user_id']})
+    if user:
+        mongo.db.users.update_one({'email': data['email']}, {'$set': {'preferences': data['preferences']}})
+        return jsonify({"message": "Preferences updated successfully"}), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+
+
+
+
 def getRedditnews():
     Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
 
-    reddit_url = 'https://api.reddit.com/r/news/top?limit=100'
+    reddit_url = 'https://api.reddit.com/r/news/top?limit=25'
 
 
     reddit_links ={
-        'Business': 'https://api.reddit.com/r/business/top?limit=100',
-        'Entertainment': 'https://api.reddit.com/r/entertainment/top?limit=100',
-        'General': 'https://api.reddit.com/r/news/top?limit=100',
-        'Health': 'https://api.reddit.com/r/health/top?limit=100',
-        'Science': 'https://api.reddit.com/r/science/top?limit=100',
-        'Sports': 'https://api.reddit.com/r/sports/top?limit=100',
-        'Technology': 'https://api.reddit.com/r/technology/top?limit=100',
-        'Politics': 'https://api.reddit.com/r/politics/top?limit=100',
+        'Business': 'https://api.reddit.com/r/business/top?limit=25',
+        'Entertainment': 'https://api.reddit.com/r/entertainment/top?limit=25',
+        'General': 'https://api.reddit.com/r/news/top?limit=25',
+        'Health': 'https://api.reddit.com/r/health/top?limit=25',
+        'Science': 'https://api.reddit.com/r/science/top?limit=25',
+        'Sports': 'https://api.reddit.com/r/sports/top?limit=25',
+        'Technology': 'https://api.reddit.com/r/technology/top?limit=25',
+        'Politics': 'https://api.reddit.com/r/politics/top?limit=25',
          'News': reddit_url
     }
     Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
@@ -506,10 +518,50 @@ if __name__ == "__main__":
 
 
 
+#!#####OAUTH CODE#####
 
+app = Flask(__name__)
+app.secret_key = os.urandom(24)  # Generate a random secret key
 
+# Ensure you have the correct client secrets path and redirect URI
+client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "/home/backend/Client_4.json")
+GOOGLE_CLIENT_ID = "456548324618-9bjm9d91qjk2grj056sdnass4o7ri8ua.apps.googleusercontent.com"
 
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Allow unencrypted HTTP for local testing
 
+flow = Flow.from_client_secrets_file(
+    client_secrets_file=client_secrets_file,
+    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+    redirect_uri="http://127.0.0.1:5000/callback"
+)
+
+@app.route("/oauth_register", methods=['GET'])
+def oauth_register():
+    authorization_url, state = flow.authorization_url()
+    session["state"] = state
+    return redirect(authorization_url)
+
+@app.route("/callback")
+def callback():
+    if "state" not in session or session["state"] != request.args.get("state"):
+        abort(500)  # State does not match
+
+    flow.fetch_token(authorization_response=request.url)
+    credentials = flow.credentials
+    request_session = requests.session()
+    cached_session = google.auth.transport.requests.CacheControl(request_session)
+    token_request = google.auth.transport.requests.Request(session=cached_session)
+
+    id_info = id_token.verify_oauth2_token(
+        id_token=credentials._id_token,
+        request=token_request,
+        audience=GOOGLE_CLIENT_ID
+    )
+
+    session["google_id"] = id_info.get("email")
+    session["name"] = id_info.get("name")
+
+    return redirect("/topics")
 
 
 
