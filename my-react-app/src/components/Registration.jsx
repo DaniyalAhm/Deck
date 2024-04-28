@@ -68,9 +68,7 @@ const Registration = () => {
       </form>
 
       <h1>Or sign up with Google</h1>
-      <form >
       <button onClick={handleOAuthClick} disabled={isLoading}>Sign in with Google</button>
-      </form>
 
       {message && <p>{message}</p>}
     </div>

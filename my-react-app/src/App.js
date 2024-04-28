@@ -86,6 +86,7 @@ const App = () => {
           <Route path="/politics" element={<Politics />} />
           <Route path="/topics" element={<Set_user_topics />} />
           <Route path="*" element={<h1>404 Not Found</h1>} />
+          //Oauth route
         </Routes>
       </div>
     </Router>

@@ -31,7 +31,7 @@ app = Flask(__name__)
 # Enable CORS
 bcrypt = Bcrypt(app)
 
-CORS(app, resources={r"/*": {"origins": "*"}})  # This will enable CORS for all domains on /api/* routes
+CORS(app, resources={r"/*": {"origins": "*"}}) 
 import secrets
 secret_key = secrets.token_hex(16)
 app.secret_key = secret_key
@@ -208,33 +208,7 @@ def get_picks():
     else:
         return jsonify([])
 
-@app.route('/topics/business')
-def bussiness():
-    return jsonify(get_news_by_topics(['Business']))
 
-@app.route('/topics/technology')
-def technology():
-    return jsonify(get_news_by_topics(['Technology']))
-
-@app.route('/topics/politics')
-def politics():
-    return jsonify(get_news_by_topics(['politics']))
-
-@app.route('/topics/entertainment')
-def entertainment():
-    return jsonify(get_news_by_topics(['Entertainment']))
-
-@app.route('/topics/sports')
-def sports():
-    return jsonify(get_news_by_topics(['Sports']))
-
-@app.route('/topics/science')
-def science():
-    return jsonify(get_news_by_topics(['Science']))
-
-@app.route('/topics/health')
-def health():
-    return jsonify(get_news_by_topics(['Health']))
 
 def get_news_by_topics(topics):
 
@@ -537,15 +511,9 @@ def combine_dataset(data1, data2):
 
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
-
 
 #!#####OAUTH CODE#####
 
-app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Generate a random secret key
 
 # Ensure you have the correct client secrets path and redirect URI
 client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "/home/backend/Client_4.json")
@@ -562,8 +530,11 @@ flow = Flow.from_client_secrets_file(
 @app.route("/oauth_register", methods=['GET'])
 def oauth_register():
     authorization_url, state = flow.authorization_url()
+    print(authorization_url, state)
     session["state"] = state
     return redirect(authorization_url)
+
+from google.auth.transport.requests import Request
 
 @app.route("/callback")
 def callback():
@@ -573,11 +544,10 @@ def callback():
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
     request_session = requests.session()
-    cached_session = google.auth.transport.requests.CacheControl(request_session)
-    token_request = google.auth.transport.requests.Request(session=cached_session)
+    token_request = Request(session=request_session)  # Use Request directly
 
     id_info = id_token.verify_oauth2_token(
-        id_token=credentials._id_token,
+        id_token=credentials.id_token,  # Ensure to use id_token if available directly
         request=token_request,
         audience=GOOGLE_CLIENT_ID
     )
@@ -585,13 +555,27 @@ def callback():
     session["google_id"] = id_info.get("email")
     session["name"] = id_info.get("name")
 
-    return redirect("/topics")
+    session['user_id'] = session["google_id"]
+
+    if not mongo.db.users.find_one({'_id': session["google_id"]}):
+        #push to mongo db
+        mongo.db.users.insert_one({
+            '_id': session["google_id"],
+            "email": session["google_id"],
+            "password": "irc",
+            'name' : session["name"],
+            'selectedTopics': "NONE",
+        })
+        return redirect("http://localhost:3001/topics")
+
+    elif mongo.db.users.find_one({'_id': session["google_id"]})  and mongo.db.users.find_one({'_id': session["google_id"]})['selectedTopics'] == "NONE":
+        return redirect("http://localhost:3001/topics")
+
+    else:
+        return redirect("http://localhost:3001/picks-for-you")
+    
 
 
 
-
-
-
-
-
-
+if __name__ == "__main__":
+    app.run(debug=True)
