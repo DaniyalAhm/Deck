@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import axios from 'axios'; // Make sure axios is imported for making HTTP requests
 
+axios.defaults.withCredentials = true;
+
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState('');
 

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import loadingGif from './loading.gif';
 
+axios.defaults.withCredentials = true;
 
 
 

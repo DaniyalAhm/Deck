@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+axios.defaults.withCredentials = true;
 
 const Registration = () => {
   const [name, setName] = useState('');

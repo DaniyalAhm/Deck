@@ -14,6 +14,7 @@ const PicksForYou = () => {
       .then(response => {
         setNews(response.data.articles);
         setLoading(false);
+        window.location.reload();
       })
       .catch(error => {
         setError(error);
@@ -35,7 +36,7 @@ const PicksForYou = () => {
   }
 
   return (
-    <div>
+    <div className='articles-container'>
       {news && news.length > 0 ? (
         news.map((article, index) => (
           <div key={index} className="article">
@@ -44,7 +45,7 @@ const PicksForYou = () => {
               <img src={article.urlToImage} alt={article.title} width="20%" />
             )}
             <p>{article.description}</p>
-            <a href={article.url} target="_blank" rel="noopener noreferrer">Read more</a>
+            <a href={article.url} target="_blank" rel="noopener noreferrer" className='Read_more'>Read more</a>
           </div>
         ))
       ) : (

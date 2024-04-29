@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import NewsComponent from './components/Newscomponent';
-import SearchBar from './components/Searchbar';
 import PicksForYou from './components/PicksForYou';
 import AuthenticationPage from './components/AuthenticationPage';
 import './App.css';
@@ -15,10 +14,10 @@ import Sports from './components/Sports';
 import Politics from './components/Politics';
 import Set_user_topics from './components/topics';
 import axios from 'axios';
-
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  axios.defaults.withCredentials = true;
 
   useEffect(() => {
     axios.get('/is_active_session')
@@ -51,7 +50,6 @@ const App = () => {
   return (
     <Router>
       <div className="App">
-        <SearchBar />
         <header className='header'>
           <div><img src={deck} alt="Deck"/></div>
         </header>
@@ -86,7 +84,6 @@ const App = () => {
           <Route path="/politics" element={<Politics />} />
           <Route path="/topics" element={<Set_user_topics />} />
           <Route path="*" element={<h1>404 Not Found</h1>} />
-          //Oauth route
         </Routes>
       </div>
     </Router>

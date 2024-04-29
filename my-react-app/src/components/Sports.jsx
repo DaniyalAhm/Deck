@@ -5,6 +5,7 @@ import loadingGif from './loading.gif';
 
 
 
+axios.defaults.withCredentials = true;
 
 const Sports = () => {
   const [news, setNews] = useState([]);

@@ -4,6 +4,7 @@ import axios from 'axios';
 import loadingGif from './loading.gif';
 
 
+axios.defaults.withCredentials = true;
 
 
 const Science = () => {

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 //TODO: Implement the set_user_topics component
 //TODO: Handle the user's selected topics
 //TODO: Beneficial for Oauth Code Flow
+axios.defaults.withCredentials = true;
 
 
 const Set_user_topics = () => {
@@ -46,7 +47,7 @@ const handleSubmit = async (event) => {
     event.preventDefault();
         const response  = await axios.post('/update_user_topics', {topics: selectedTopics})
     
-    navigate('/');
+    navigate('/picks-for-you');
     }
 
  return (

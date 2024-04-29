@@ -24,7 +24,18 @@ from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 import google.auth.transport.requests
 
+class Oauth:
+    def __init__(self) -> None:
+        self.id = None
 
+    def set_id(self, id):
+        self.id = id
+
+    def get_id(self):
+        return self.id
+
+
+id = Oauth()
 
 # Initialize the Flask application
 app = Flask(__name__)
@@ -193,14 +204,25 @@ def Technology():
 
 @app.route('/picks-for-you', methods=['GET'])
 def get_picks():
-    if 'user_id' not in session:
-        return jsonify({"error": "User not authenticated"}), 500
+    if 'user_id' not in session and id.get_id() == None:
+        return jsonify({"error": "User not authenticated"}), 404
+    
+    elif 'user_id' not in session and id.get_id() != None:
+        user = mongo.db.users.find_one({'_id': id.get_id()})
+        session['user_id'] = id.get_id()
+        if user:
+            content = fetch_content_based_on_preferences(user['selectedTopics'])
+            print(content)
+            return jsonify(content), 200
+        
+        else:
+            return jsonify({"error": "User not found"}), 404
     
 
 
     user_id = session['user_id']
     user_preferences = mongo.db.users.find_one({'_id': (user_id)})['selectedTopics']
-
+    print(user_preferences)
 
     if user_preferences:
         personalized_content = fetch_content_based_on_preferences(user_preferences)
@@ -315,16 +337,19 @@ def fetch_content_based_on_preferences(user_preferences):
     for topic in user_preferences:
         content.append(get_news_by_topics(topic))
 
-    data = content[0]['articles']
+    data = content[0]
+
+
+
 
 
     
     for i in range(1, len(content)):
-
         if 'articles' in content:
-            data.extend(content['articles'])
+            data.extend(content[i])
 
-    return (data)
+
+    return (content[0])
 
 
 @app.route('/is_active_session' , methods=['GET'])
@@ -339,7 +364,7 @@ def is_active_session():
 
 @app.route('/topics', methods=['GET'])
 def get_topics():
-    return jsonify(['Business', 'Entertainment', 'General', 'Health', 'Science', 'Sports', 'Technology'])
+    return jsonify(['Business', 'Entertainment', 'General', 'Health', 'Science', 'Sports', 'Technology', 'Politics'])
 
 
 
@@ -428,8 +453,18 @@ def get_first_sentences(page_url, sentence_count=50):
 
 @app.route('/getuser_info', methods=['GET'])
 def getuser_info():
-    if 'user_id' not in session:
+    if 'user_id' not in session and id.get_id() == None:
         return jsonify({"error": "User not authenticated"}), 500
+    
+    elif 'user_id' not in session and id.get_id() != None:
+        user = mongo.db.users.find_one({'_id': id.get_id()})
+        session['user_id'] = id.get_id()
+        if user:
+            return jsonify(user), 200
+        
+        else:
+            return jsonify({"error": "User not found"}), 404
+        
 
     print(session['user_id'])
     user = mongo.db.users.find_one({'_id': (session['user_id'])})
@@ -556,6 +591,7 @@ def callback():
     session["name"] = id_info.get("name")
 
     session['user_id'] = session["google_id"]
+    id.set_id(session["google_id"])
 
     if not mongo.db.users.find_one({'_id': session["google_id"]}):
         #push to mongo db
