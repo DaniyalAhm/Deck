@@ -1,15 +1,4 @@
 
-/* Adjust the search bar positioning */
-.Searchbar {
-  display: flex;
-  position: relative;
-  top: 30%;
-}
-
-.search-form {
-  border-radius: 4px;
-  color: #433e46;
-}
 
 .Loading {
   position: relative;
@@ -19,13 +8,7 @@
   font-size: 100px;
 }
 
-.search-button {
-  background: #2b0146;
-  color: white;
-  border: none;
-  border-radius: 2px;
-  cursor: pointer;
-}
+
 
 /* Article Styles */
 .articles-container {

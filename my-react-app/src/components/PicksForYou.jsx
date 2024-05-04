@@ -14,7 +14,6 @@ const PicksForYou = () => {
       .then(response => {
         setNews(response.data.articles);
         setLoading(false);
-        window.location.reload();
       })
       .catch(error => {
         setError(error);
@@ -32,7 +31,7 @@ const PicksForYou = () => {
   }
 
   if (error) {  
-    return <div>There was an error getting the news: {error.message}</div>;
+    return <div >There was an error getting the news: {error.message}</div>;
   }
 
   return (

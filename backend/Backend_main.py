@@ -16,6 +16,7 @@ from bs4 import BeautifulSoup
 from bson.objectid import ObjectId
 import os
 import pathlib
+from dotenv import load_dotenv
 
 import requests
 from flask import Flask, session, abort, redirect, request
@@ -33,6 +34,15 @@ class Oauth:
 
     def get_id(self):
         return self.id
+
+#!Loading APIS 
+load_dotenv()
+News_Api= os.getenv('NEWS_API')
+Reddit = os.getenv('REDDIT_API')
+Mongo= os.getenv('MONGO_URI')
+Google = os.getenv('GOOGLE_CLIENT_ID')
+
+
 
 
 id = Oauth()
@@ -55,7 +65,7 @@ app.secret_key = secret_key
 # and "myUsername:myPassword" with your actual credentials
 # "localhost:27017" is the default MongoDB port on your local machine.
 # Adjust the URI according to your MongoDB deployment
-app.config["MONGO_URI"] = "mongodb+srv://daniyala:KEhA3IsPwwWX6SmF@cluster0.dafwpve.mongodb.net/Test"
+app.config["MONGO_URI"] = Mongo
 
 mongo = PyMongo(app)    # Initialize PyMongo with the Flask application
 # Assuming you're using the mongo.db object to interact with your database
@@ -66,7 +76,7 @@ loggedin= False
 
 @app.route('/news', methods=['GET'])
 def get_news():
-    url = 'https://newsapi.org/v2/top-headlines?country=us&apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
+    url = 'https://newsapi.org/v2/top-headlines?country=us&apiKey='+News_Api
 
 
 
@@ -76,7 +86,7 @@ def get_news():
 
 
     data = response.json()
-    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
+    Reddit_api = Reddit
 
     reddit_url = 'https://api.reddit.com/r/news/top?limit=25'
 
@@ -125,7 +135,7 @@ def search():
         'q={query}&'
         'from=2024-04-11&'
         'sortBy=popularity&'
-        'apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
+        'apiKey='+News_Api
     ).format(query=query)  
 
     response = requests.get(url)  
@@ -244,13 +254,13 @@ def get_news_by_topics(topics):
         'Technology': 'https://api.reddit.com/r/technology/top?limit=25',
         'Politics': 'https://api.reddit.com/r/politics/top?limit=25',
     }
-    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
+    Reddit_api = Reddit
 
     headers = {
         'Authorization': Reddit_api,
         'User-Agent': 'Daniyal'
     }
-    url= 'https://newsapi.org/v2/everything?q='+topics+'&apiKey=f8b02b9635ed4db4bae7cad2ee599cd2'
+    url= 'https://newsapi.org/v2/everything?q='+topics+'&apiKey='+News_Api
 
 
 
@@ -260,7 +270,7 @@ def get_news_by_topics(topics):
 
 
     data = response.json()
-    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
+    Reddit_api = Reddit
 
     reddit_url = reddit_links[topics]
 
@@ -394,14 +404,18 @@ def post():
 def get_thumbnail_url(page_url):
     response = requests.get(page_url)
     if response.status_code == 200:
-        html_content = response.text
-        soup = BeautifulSoup(html_content, 'html.parser')
+        try:
+            html_content = response.text
+            soup = BeautifulSoup(html_content, 'html.parser')
+            
+            og_image = soup.find('meta', property='og:image')
         
-        og_image = soup.find('meta', property='og:image')
-        if og_image and og_image.get('content'):
-            return og_image['content']
-    
-
+            if og_image and og_image.get('content'):
+            
+                return og_image['content']
+        
+        except:
+            print("No image found")
     return 'removed'
 
 
@@ -418,34 +432,37 @@ def generate_unique_id():
 
 def get_first_sentences(page_url, sentence_count=50):
     response = requests.get(page_url)
+
     if response.status_code == 200:
-        html_content = response.text
-        soup = BeautifulSoup(html_content, 'html.parser')
-        
-        # Attempt to find the main article content
-        # Common tags include <article>, <div>, or directly <p> tags within specific containers
-        article_body = soup.find('article')
-        if not article_body:
-            article_body = soup.find('div', {'class': 'post-body'})  # You might need to adjust this class name based on common patterns
+        try:
+            html_content = response.text
+            soup = BeautifulSoup(html_content, 'html.parser')
+            
+            # Attempt to find the main article content
+            # Common tags include <article>, <div>, or directly <p> tags within specific containers
+            article_body = soup.find('article')
+            if not article_body:
+                    article_body = soup.find('div', {'class': 'post-body'})  # You might need to adjust this class name based on common patterns
 
 
 
+            # If an article body container is found, extract text from <p> tags
+            if article_body:
+                paragraphs = article_body.find_all('p')
+                full_text = ' '.join(p.get_text() for p in paragraphs)
+                # Split the text into sentences
+                sentences = full_text.split(' ')
+                # Return the first few sentences
+                for i in range(0, len(sentences)):
+                    if i %5 == 0:
+                        sentences[i] = sentences[i] + '\n'
 
-        # If an article body container is found, extract text from <p> tags
-        if article_body:
-            paragraphs = article_body.find_all('p')
-            full_text = ' '.join(p.get_text() for p in paragraphs)
-            # Split the text into sentences
-            sentences = full_text.split(' ')
-            # Return the first few sentences
-            for i in range(0, len(sentences)):
-                if i %5 == 0:
-                    sentences[i] = sentences[i] + '\n'
+                string =  " ".join(sentences[:sentence_count]) + '.'
 
-            string =  " ".join(sentences[:sentence_count]) + '.'
-
-         
+            
             return string
+        except:
+            print("No description found")
 
     # Return None if no content is found or there's an HTTP error
     return "No Description, Click Read more for more information"
@@ -494,7 +511,7 @@ def update_preferences():
 
 
 def getRedditnews():
-    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
+    Reddit_api = Reddit
 
     reddit_url = 'https://api.reddit.com/r/news/top?limit=25'
 
@@ -510,7 +527,7 @@ def getRedditnews():
         'Politics': 'https://api.reddit.com/r/politics/top?limit=25',
          'News': reddit_url
     }
-    Reddit_api = 'FUmo2syXlV5DH88wAteCyf2G9bPBHw'
+    Reddit_api = Reddit
 
     content = []
     headers = {
@@ -551,8 +568,8 @@ def combine_dataset(data1, data2):
 
 
 # Ensure you have the correct client secrets path and redirect URI
-client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "/home/backend/Client_4.json")
-GOOGLE_CLIENT_ID = "456548324618-9bjm9d91qjk2grj056sdnass4o7ri8ua.apps.googleusercontent.com"
+client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "Client_4.json")
+GOOGLE_CLIENT_ID = Google
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Allow unencrypted HTTP for local testing
 
