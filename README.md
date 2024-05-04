@@ -10,6 +10,7 @@ Deck is a dynamic news aggregation application designed to deliver the latest an
 - **APIs**:
   - **Reddit API**: For fetching trending news and discussions from various subreddits.
   - **News API**: For obtaining breaking news headlines and searching for news from multiple sources.
+  - **Google OAuth** : For easy sign up and log in 
 - **Web Scraping**:
   - **BeautifulSoup**: A Python library for pulling data out of HTML and XML files. It's used to scrape websites that do not offer an API.
 
@@ -32,6 +33,7 @@ Deck is a dynamic news aggregation application designed to deliver the latest an
         echo "REDDIT_API=YOUR_API_KEY_HERE" >> /backend/.env
         echo "MONGO_URI=YOUR_MONGO_DATABASE_HERE" >> /backend/.env
         echo "GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID_HERE" >> /backend/.env
+        echo  "GOOGLE_CLIENT_SECRET=YOUR_SECRET_FILE_HERE" >> /backend/.ev
 ## Known Bugs
 Sometimes SSL requests do not go through in web scrapping, this is because of website we are trying to scrap from has a invalid signature error, this will be fixed in the future
 
