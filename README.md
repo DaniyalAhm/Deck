@@ -22,8 +22,18 @@ Deck is a dynamic news aggregation application designed to deliver the latest an
 ## Setup Instructions
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourgithubusername/Deck.git
-   cd Deck
+   git clone git@github.com:DaniyalAhm/411-project.git
+   cd 411-project
+   touch /backend/.env
+   
+2. **Enter API Keys**
+    ```bash
+        echo "NEWS_API=YOUR_API_KEY_HERE" >> /backend/..env
+        echo "REDDIT_API=YOUR_API_KEY_HERE" >> /backend/.env
+        echo "MONGO_URI=YOUR_MONGO_DATABASE_HERE" >> /backend/.env
+        echo "GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID_HERE" >> /backend/.env
+
+        
 
 
 ## Known Bugs
