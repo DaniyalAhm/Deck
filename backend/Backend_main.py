@@ -41,6 +41,7 @@ News_Api= os.getenv('NEWS_API')
 Reddit = os.getenv('REDDIT_API')
 Mongo= os.getenv('MONGO_URI')
 Google = os.getenv('GOOGLE_CLIENT_ID')
+Google_secret = os.getenv('GOOGLE_CLIENT_SECRET')
 
 
 
@@ -568,7 +569,7 @@ def combine_dataset(data1, data2):
 
 
 # Ensure you have the correct client secrets path and redirect URI
-client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "Client_4.json")
+client_secrets_file = os.path.join(pathlib.Path(__file__).parent,Google_secret )
 GOOGLE_CLIENT_ID = Google
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Allow unencrypted HTTP for local testing
