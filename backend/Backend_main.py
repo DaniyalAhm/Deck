@@ -620,13 +620,13 @@ def callback():
             'name' : session["name"],
             'selectedTopics': "NONE",
         })
-        return redirect("http://localhost:3001/topics")
+        return redirect("http://localhost:3000/topics")
 
     elif mongo.db.users.find_one({'_id': session["google_id"]})  and mongo.db.users.find_one({'_id': session["google_id"]})['selectedTopics'] == "NONE":
-        return redirect("http://localhost:3001/topics")
+        return redirect("http://localhost:3000/topics")
 
     else:
-        return redirect("http://localhost:3001/picks-for-you")
+        return redirect("http://localhost:3000/picks-for-you")
     
 
 
