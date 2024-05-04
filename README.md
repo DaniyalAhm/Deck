@@ -34,6 +34,12 @@ Deck is a dynamic news aggregation application designed to deliver the latest an
         echo "MONGO_URI=YOUR_MONGO_DATABASE_HERE" >> /backend/.env
         echo "GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID_HERE" >> /backend/.env
         echo  "GOOGLE_CLIENT_SECRET=YOUR_SECRET_FILE_HERE" >> /backend/.env
+3. **Start The APP**
+      ```bash
+          backend/Backend_main.py
+          #in a new terminal
+          cd my-react-app/
+          npm start
 ## Known Bugs
 Sometimes SSL requests do not go through in web scrapping, this is because of website we are trying to scrap from has a invalid signature error, this will be fixed in the future
 
