@@ -26,8 +26,8 @@ Deck is a dynamic news aggregation application designed to deliver the latest an
    cd Deck
 
 
-## Contributions
-We welcome contributions to Deck. Please feel free to fork the repository, make improvements, and submit a pull request. Check out the issues tab for pending improvements and bug fixes.
+## Known Bugs
+Sometimes SSL requests do not go through in web scrapping, this is because of website we are trying to scrap from has a invalid signature error, this will be fixed in the future
 
 ## Credits
 - Canwbu
