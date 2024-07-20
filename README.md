@@ -1,4 +1,7 @@
 # Deck - Your Daily News Dashboard
+ <!-- DISPLAY=TRUE -->
+
+
 
 ## Overview
 Deck is a dynamic news aggregation application designed to deliver the latest and most relevant news articles from a variety of sources. This application leverages the power of React for the frontend, providing a seamless and responsive user interface. The backend is powered by Flask, ensuring efficient server-side logic and API management.
